@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # 1. Banco de Escrita (Write Model)
+  postgres:
+    image: postgres:16-alpine
+    container_name: pb_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: PlataformaBancariaDb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # 2. Banco de Leitura (Read Model)
+  mongodb:
+    image: mongo:7.0
+    container_name: pb_mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  # 3. Message Broker (Mensageria e Eventos)
+  rabbitmq:
+    # A tag 'management' inclui a interface visual para gerenciar as filas
+    image: rabbitmq:3.13-management-alpine
+    container_name: pb_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: adminpassword
+    ports:
+      - "5672:5672"   # Porta usada pela aplicação para enviar/receber mensagens
+      - "15672:15672" # Porta da interface visual do painel de controle
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+# Declaração dos volumes nomeados para garantir a persistência dos dados
+volumes:
+  postgres_data:
+  mongodb_data:
+  rabbitmq_data:
