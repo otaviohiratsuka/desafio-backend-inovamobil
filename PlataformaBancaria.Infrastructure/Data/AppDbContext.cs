@@ -12,34 +12,13 @@ namespace PlataformaBancaria.Infrastructure.Data
 
         public DbSet<Conta> Contas { get; set; }
 
+        public DbSet<Transacao> Transacoes { get; set; }
+
+        public DbSet<ChaveIdempotencia> ChavesIdempotencia { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Conta>(builder =>
-            {
-                builder.ToTable("Contas");
-
-                builder.HasKey(c => c.Id);
-
-                builder.Property(c => c.Cnpj)
-                    .HasConversion(
-                        cnpj => (string)cnpj,
-                        valor => new Cnpj(valor))
-                    .HasColumnName("Cnpj")
-                    .IsRequired();
-
-                builder.Property(c => c.RazaoSocial)
-                    .IsRequired();
-
-                builder.Property(c => c.Agencia)
-                    .IsRequired();
-
-                builder.Property(c => c.Saldo)
-                    .HasColumnType("decimal(18,2)");
-
-                builder.Property(c => c.Status)
-                    .IsRequired();
-            });
-
+            modelBuilder.Entity<ChaveIdempotencia>().HasKey(c => c.Id);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
             base.OnModelCreating(modelBuilder);
         }
     }

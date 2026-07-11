@@ -1,28 +1,42 @@
-using PlataformaBancaria.Application.Services.Interfaces;
-using PlataformaBancaria.Application.Services;
-using PlataformaBancaria.Domain.Repositories;
-using PlataformaBancaria.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using MassTransit;
+using PlataformaBancaria.Application.Commands.Contas;
+using PlataformaBancaria.Domain.Repositories;
 using PlataformaBancaria.Infrastructure.Data;
+using PlataformaBancaria.Infrastructure.Repositories;
+using PlataformaBancaria.Domain.Services;
+using PlataformaBancaria.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Registra o DbContext e aponta para a connection string
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
-
-// Registra os repositórios e serviços (Injeção de Dependência)
-builder.Services.AddScoped<IContaRepository, ContaRepository>();
-builder.Services.AddScoped<IContaAppService, ContaAppService>();
-
-// Adiciona o suporte para as rotas da API e documentação Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IContaRepository, ContaRepository>();
+builder.Services.AddScoped<IIdempotenciaRepository, IdempotenciaRepository>();
+builder.Services.AddHttpClient<IEmpresaService, EmpresaService>();
+
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", 5673, "/", h => {
+            h.Username("guest");
+            h.Password("guest");
+        });
+    });
+});
+// ----------------------------------------------
+
+builder.Services.AddMediatR(cfg => 
+    cfg.RegisterServicesFromAssembly(typeof(AbrirContaCommand).Assembly));
+
 var app = builder.Build();
 
-// Configura o pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -31,7 +45,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Mapeia os Controllers e inicia a API
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

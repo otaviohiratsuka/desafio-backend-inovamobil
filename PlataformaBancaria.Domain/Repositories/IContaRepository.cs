@@ -32,5 +32,10 @@ namespace PlataformaBancaria.Domain.Repositories
         /// antes mesmo de chegar ao repositório.
         /// </summary>
         Task<Conta?> ObterPorCnpjAsync(Cnpj cnpj);
+
+        /// <summary>
+        /// Obtém todas as contas cadastradas.
+        /// </summary>
+        Task<IEnumerable<Conta>> ObterTodasAsync();
     }
 }
