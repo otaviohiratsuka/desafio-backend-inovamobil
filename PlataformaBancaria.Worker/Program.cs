@@ -8,7 +8,6 @@ var builder = Host.CreateDefaultBuilder(args);
 MongoDB.Bson.Serialization.BsonSerializer.RegisterSerializer(new MongoDB.Bson.Serialization.Serializers.GuidSerializer(MongoDB.Bson.GuidRepresentation.Standard));
 #pragma warning restore CS0618
 
-
 builder.ConfigureServices((hostContext, services) =>
 {
     services.AddSingleton<IMongoClient>(new MongoClient("mongodb://localhost:27018"));
@@ -16,6 +15,7 @@ builder.ConfigureServices((hostContext, services) =>
     services.AddMassTransit(x =>
     {
         x.AddConsumer<DepositoRealizadoConsumer>();
+        x.AddConsumer<SaqueRealizadoConsumer>();
 
         x.UsingRabbitMq((context, cfg) =>
         {
@@ -28,6 +28,11 @@ builder.ConfigureServices((hostContext, services) =>
             cfg.ReceiveEndpoint("deposito-realizado-queue", e =>
             {
                 e.ConfigureConsumer<DepositoRealizadoConsumer>(context);
+            });
+
+            cfg.ReceiveEndpoint("saque-realizado-queue", e =>
+            {
+                e.ConfigureConsumer<SaqueRealizadoConsumer>(context);
             });
         });
     });
