@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using PlataformaBancaria.Application.Commands.Contas;
 using PlataformaBancaria.Application.Commands.Operacoes;
+using PlataformaBancaria.Application.Queries;
 
 namespace PlataformaBancaria.Api.Controllers
 {
@@ -101,6 +102,35 @@ namespace PlataformaBancaria.Api.Controllers
             {
                 return NotFound(new { erro = ex.Message });
             }
+        }
+
+        /// <summary>
+        /// Obtém o extrato da conta informada pela rota diretamente do banco de leitura.
+        /// </summary>
+        /// <response code="200">Extrato retornado com sucesso.</response>
+        [HttpGet("/api/v1/accounts/{id}/statement")]
+        [ProducesResponseType(typeof(IEnumerable<TransacaoDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ObterExtrato(
+            [FromRoute] Guid id,
+            [FromQuery] DateTime? dataInicio,
+            [FromQuery] DateTime? dataFim,
+            [FromQuery] string? tipo,
+            [FromQuery] int pagina = 1,
+            [FromQuery] int tamanhoPagina = 20)
+        {
+            var query = new ObterExtratoQuery
+            {
+                ContaId = id,
+                DataInicio = dataInicio,
+                DataFim = dataFim,
+                Tipo = tipo,
+                Pagina = pagina,
+                TamanhoPagina = tamanhoPagina
+            };
+
+            var extrato = await _mediator.Send(query);
+
+            return Ok(extrato);
         }
     }
 }
