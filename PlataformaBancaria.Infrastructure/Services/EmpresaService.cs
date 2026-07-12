@@ -19,23 +19,30 @@ namespace PlataformaBancaria.Infrastructure.Services
             
             try
             {
-                // Fazemos a chamada HTTP para a API pública
                 var response = await _httpClient.GetFromJsonAsync<ReceitaWsResponse>($"https://receitaws.com.br/v1/cnpj/{cnpjLimpo}");
                 
-                // Se encontrar o nome, retorna. Se o JSON vier vazio, retorna um aviso.
-                return response?.Nome ?? "Razão Social Não Encontrada";
+                // 1. Valida se a Receita Federal realmente encontrou a empresa
+                if (response is null || string.IsNullOrWhiteSpace(response.Nome))
+                    throw new ArgumentException("CNPJ não encontrado na Receita Federal.");
+
+                // 2. A Regra de Ouro: Bloqueia CNPJs que não estejam ATIVOS
+                if (response.Situacao != "ATIVA")
+                    throw new InvalidOperationException($"Abertura de conta negada. O CNPJ encontra-se com situação '{response.Situacao}' na Receita Federal.");
+                
+                return response.Nome;
             }
-            catch
+            catch (HttpRequestException)
             {
-                // Se a internet cair ou a API da Receita estiver fora do ar, não travamos o banco:
-                return "Empresa Padrão (Serviço Indisponível)";
+                // 3. Se a API estiver fora do ar, abortamos o processo em vez de inventar um nome
+                throw new InvalidOperationException("O serviço da Receita Federal está indisponível no momento. Tente novamente mais tarde.");
             }
         }
 
-        // Usamos um DTO privado apenas para mapear o campo "nome" que a ReceitaWS devolve no JSON
+        // Mapeamos também a Situação que vem no JSON da ReceitaWS
         private class ReceitaWsResponse
         {
-            public string Nome { get; set; }
+            public string Nome { get; set; } = string.Empty;
+            public string Situacao { get; set; } = string.Empty;
         }
     }
 }

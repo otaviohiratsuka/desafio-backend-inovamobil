@@ -10,7 +10,8 @@ MongoDB.Bson.Serialization.BsonSerializer.RegisterSerializer(new MongoDB.Bson.Se
 
 builder.ConfigureServices((hostContext, services) =>
 {
-    services.AddSingleton<IMongoClient>(new MongoClient("mongodb://localhost:27018"));
+    // Conexão ajustada para o container MongoDB
+    services.AddSingleton<IMongoClient>(new MongoClient("mongodb://mongodb:27017"));
 
     services.AddMassTransit(x =>
     {
@@ -19,7 +20,8 @@ builder.ConfigureServices((hostContext, services) =>
 
         x.UsingRabbitMq((context, cfg) =>
         {
-            cfg.Host("localhost", 5673, "/", h =>
+            // Conexão ajustada para o container RabbitMQ
+            cfg.Host("rabbitmq", 5672, "/", h =>
             {
                 h.Username("guest");
                 h.Password("guest");

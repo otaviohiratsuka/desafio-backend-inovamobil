@@ -8,7 +8,6 @@ using PlataformaBancaria.Infrastructure.Repositories;
 using PlataformaBancaria.Domain.Services;
 using PlataformaBancaria.Infrastructure.Services;
 
-// Adicione isto logo no começo do seu Program.cs
 #pragma warning disable CS0618
 MongoDB.Bson.Serialization.BsonSerializer.RegisterSerializer(new MongoDB.Bson.Serialization.Serializers.GuidSerializer(MongoDB.Bson.GuidRepresentation.Standard));
 #pragma warning restore CS0618
@@ -22,8 +21,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddSingleton<IMongoClient>(new MongoClient("mongodb://mongodb:27017"));
 
-builder.Services.AddSingleton<IMongoClient>(new MongoClient("mongodb://localhost:27018"));
 builder.Services.AddScoped<IContaRepository, ContaRepository>();
 builder.Services.AddScoped<IIdempotenciaRepository, IdempotenciaRepository>();
 builder.Services.AddHttpClient<IEmpresaService, EmpresaService>();
@@ -32,13 +31,12 @@ builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", 5673, "/", h => {
+        cfg.Host("rabbitmq", 5672, "/", h => {
             h.Username("guest");
             h.Password("guest");
         });
     });
 });
-// ----------------------------------------------
 
 builder.Services.AddMediatR(cfg => 
     cfg.RegisterServicesFromAssembly(typeof(AbrirContaCommand).Assembly));
@@ -52,9 +50,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
+
+// Aplica as migrações do banco de dados automaticamente ao iniciar
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.Run();

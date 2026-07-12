@@ -1,50 +1,78 @@
 version: '3.8'
 
 services:
-  # 1. Banco de Escrita (Write Model)
+  # 1. Banco de Escrita (PostgreSQL)
   postgres:
-    image: postgres:16-alpine
-    container_name: pb_postgres
+    image: postgres:15-alpine
+    container_name: plataforma-postgres
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword # Ajuste para a senha que você usa no appsettings.json
       POSTGRES_DB: PlataformaBancariaDb
     ports:
       - "5433:5432"
+    networks:
+      - bancaria-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
 
-  # 2. Banco de Leitura (Read Model)
+  # 2. Banco de Leitura (MongoDB)
   mongodb:
-    image: mongo:7.0
-    container_name: pb_mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+    image: mongo:latest
+    container_name: plataforma-mongodb
     ports:
-      - "27017:27017"
+      - "27018:27017" # Mapeando a porta externa 27018 que você usou no Worker
+    networks:
+      - bancaria-network
     volumes:
       - mongodb_data:/data/db
-    restart: unless-stopped
 
-  # 3. Message Broker (Mensageria e Eventos)
+  # 3. Message Broker (RabbitMQ)
   rabbitmq:
-    # A tag 'management' inclui a interface visual para gerenciar as filas
-    image: rabbitmq:3.13-management-alpine
-    container_name: pb_rabbitmq
+    image: rabbitmq:3-management-alpine # A tag "-management" é exigência do desafio
+    container_name: plataforma-rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: adminpassword
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "5672:5672"   # Porta usada pela aplicação para enviar/receber mensagens
-      - "15672:15672" # Porta da interface visual do painel de controle
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    restart: unless-stopped
+      - "5673:5672"   # Porta de comunicação (que você usou no Program.cs)
+      - "15672:15672" # Porta do painel visual no navegador
+    networks:
+      - bancaria-network
 
-# Declaração dos volumes nomeados para garantir a persistência dos dados
+  # 4. API (ASP.NET Core)
+  api:
+    build:
+      context: .
+      dockerfile: PlataformaBancaria.Api/Dockerfile
+    container_name: plataforma-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5117:8080" # Ajuste a porta se necessário
+    depends_on:
+      - postgres
+      - mongodb
+      - rabbitmq
+    networks:
+      - bancaria-network
+
+  # 5. Worker (MassTransit Consumer)
+  worker:
+    build:
+      context: .
+      dockerfile: PlataformaBancaria.Worker/Dockerfile
+    container_name: plataforma-worker
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - bancaria-network
+
+networks:
+  bancaria-network:
+    driver: bridge
+
 volumes:
   postgres_data:
   mongodb_data:
-  rabbitmq_data:
