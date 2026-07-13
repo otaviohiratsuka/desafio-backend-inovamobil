@@ -30,6 +30,11 @@ Este projeto consiste no desenvolvimento de uma Plataforma Bancária, permitindo
 * **RabbitMQ e MassTransit:** O agente de mensagens e a abstração utilizada para publicar eventos e criar os Workers (consumidores) de forma resiliente.]
   - O RabbitMQ foi escolhido por ser o padrão ouro para roteamento transacional e garantia de entrega de eventos de negócios ("Transferência Realizada", "Depósito Realizado"). Para viabilizar essa integração de forma robusta e limpa, foi adotado a biblioteca `MassTransit`, que abstraiu toda a complexidade de infraestrutura do RabbitMQ, permitindo focar 100% em garantir a Consistência Eventual entre a API e o *Worker*.
   - Para manter a API rápida, ela nunca salva dados no Postgres e no Mongo ao mesmo tempo. Após salvar um depósito no Postgres com sucesso, a API utiliza a função `_publishEndpoint.Publish()` da biblioteca MassTransit. Isso simplesmente envia um "aviso" (evento) para a fila do RabbitMQ. Imediatamente após enviar o aviso, a API libera o usuário. Em segundo plano, o nosso Worker escuta esse aviso e usa a função `InsertOneAsync()` do MongoDB para atualizar o extrato.
+ 
+<p align="center">
+  <img src="./assets/fluxograma-bd.png" alt="Visão Geral da API - Swagger">
+</p>
+
 * **Docker e Docker Compose:** Junta os cinco serviços exigidos (`api`, `worker`, `postgres`, `mongodb`, `rabbitmq`) para que subam juntos com um único comando. Tornando mais fácil instalação e compilação do código, fazendo com que seja levantada por qualquer desenvolvedor com um único comando, sem instalar dependências manuais.
 4. **Integrações Externas**
 * **ReceitaWS:** O sistema se comunica com a API da Receita Federal (ReceitaWS) para validar e capturar ativamente os dados da empresa (RazaoSocial) através do CNPJ no momento da abertura da conta.
@@ -49,14 +54,14 @@ A interface da nossa API foi desenhada para ser intuitiva. Ela é dividida nos s
 
 #### `POST /api/v1/accounts` (Abrir Conta)
 Cria uma nova conta corporativa. Note que não enviamos a "Razão Social", pois a API consulta o CNPJ diretamente na **ReceitaWS** para garantir a veracidade dos dados.
-*   **O que recebe:**
+*   **O que recebe (Request):**
 ```json
     {
       "cnpj": "11222333000181",
       "agencia": "0001"
     }
 ```
-*   **O que retorna (Response - 201 Created):**
+*   **O que retorna (Response - 200 OK):**
 ```json
     {
       "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -154,6 +159,8 @@ Move dinheiro entre duas contas diferentes.
 *   **Cenários Testados:**
      * Se a conta de destino estiver com status "Encerrada" ou não existir -> A transferência é negada (`400 Bad Request`).
 
+---
+
 ### 3. Consultas (Leitura em Alta Performance - MongoDB)
 #### `GET /api/v1/accounts/{id}/balance` (Ver Saldo)
 Consulta que lê os dados consolidados diretamente do MongoDB, sem sobrecarregar o banco relacional.
@@ -163,7 +170,7 @@ Consulta que lê os dados consolidados diretamente do MongoDB, sem sobrecarregar
 *   **O que retorna (Response - 200 OK):**
   ```json
     {
-     "saldo": 10010"
+     "saldo": 10010
     }
 ``` 
 
