@@ -205,7 +205,15 @@ Traz o histórico completo (*Event Sourcing*) de tudo o que aconteceu na conta (
     "dataOcorrencia": "2026-07-12T21:51:35.953Z"
   }
 ]
-``` 
+```
+
+## 🚀 Melhorias Futuras
+
+Embora a arquitetura atual atenda a todos os requisitos do desafio com resiliência, em um cenário de evolução para produção com mais tempo de desenvolvimento, eu priorizaria as seguintes implementações:
+
+* **Desenvolvimento de uma Interface Web (Frontend):** Construir um painel visual utilizando HTML, CSS e um framework robusto como o **Angular**. Isso permitiria consumir a API de forma amigável, simulando o dashboard real do cliente bancário para gerenciar a conta e visualizar o extrato.
+* **Sistema de Cadastro e Login (Autenticação JWT):** Criar um fluxo completo de registro de clientes e login. Com a emissão de tokens JWT (JSON Web Tokens), garantiríamos que a API ficasse blindada e que apenas os titulares autenticados tivessem permissão para realizar movimentações financeiras em suas respectivas contas.
+* **Observabilidade e Logs Centralizados:** Adicionar o **Serilog** em conjunto com a stack ELK (Elasticsearch, Logstash, Kibana) ou Prometheus/Grafana. Como temos uma arquitetura distribuída com RabbitMQ e Workers, a rastreabilidade (Tracing) das requisições se torna vital para debugar problemas em produção.
 
 ## 📂 Estrutura do Projeto
 
