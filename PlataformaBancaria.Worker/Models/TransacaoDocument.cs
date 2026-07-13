@@ -15,5 +15,6 @@ namespace PlataformaBancaria.Worker.Models
         public string Tipo { get; set; } = string.Empty;
         public decimal Valor { get; set; }
         public DateTime DataOcorrencia { get; set; }
+        public string Descricao { get; set; } = string.Empty;
     }
 }

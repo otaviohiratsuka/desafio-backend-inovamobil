@@ -25,7 +25,7 @@ namespace PlataformaBancaria.Application.Queries
 
         public ObterExtratoQueryHandler(IMongoClient mongoClient)
         {
-            var database = mongoClient.GetDatabase("PlataformaBancariaReadDb");
+            var database = mongoClient.GetDatabase("PlataformaBancariaDb");
             _collection = database.GetCollection<TransacaoReadModel>("Transacoes");
         }
 
@@ -58,7 +58,8 @@ namespace PlataformaBancaria.Application.Queries
     }
 
     // 2. Modelo de leitura espelhado exatamente como o Worker gravou
-    public class TransacaoReadModel
+ [BsonIgnoreExtraElements] 
+     public class TransacaoReadModel
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -70,5 +71,6 @@ namespace PlataformaBancaria.Application.Queries
         public string Tipo { get; set; } = string.Empty;
         public decimal Valor { get; set; }
         public DateTime DataOcorrencia { get; set; }
+        public string Descricao { get; set; } = string.Empty; // <-- O campo que estava faltando!
     }
 }

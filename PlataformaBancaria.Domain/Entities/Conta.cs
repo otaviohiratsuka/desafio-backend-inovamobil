@@ -70,5 +70,10 @@ namespace PlataformaBancaria.Domain.Entities
             if (Status != "Ativa")
                 throw new InvalidOperationException("Operação não permitida. A conta não está ativa.");
         }
+
+        public void AlterarStatus(string novoStatus)
+        {
+        Status = novoStatus;
+        }
     }
 }

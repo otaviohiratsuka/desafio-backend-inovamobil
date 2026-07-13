@@ -15,8 +15,10 @@ builder.ConfigureServices((hostContext, services) =>
 
     services.AddMassTransit(x =>
     {
+        // 1. Registrando todos os consumidores
         x.AddConsumer<DepositoRealizadoConsumer>();
         x.AddConsumer<SaqueRealizadoConsumer>();
+        x.AddConsumer<TransferenciaRealizadaConsumer>(); // <-- Consumidor de Transferência adicionado
 
         x.UsingRabbitMq((context, cfg) =>
         {
@@ -27,6 +29,7 @@ builder.ConfigureServices((hostContext, services) =>
                 h.Password("guest");
             });
 
+            // 2. Configurando as filas (Endpoints)
             cfg.ReceiveEndpoint("deposito-realizado-queue", e =>
             {
                 e.ConfigureConsumer<DepositoRealizadoConsumer>(context);
@@ -35,6 +38,12 @@ builder.ConfigureServices((hostContext, services) =>
             cfg.ReceiveEndpoint("saque-realizado-queue", e =>
             {
                 e.ConfigureConsumer<SaqueRealizadoConsumer>(context);
+            });
+
+            // <-- Fila de Transferência adicionada
+            cfg.ReceiveEndpoint("transferencia-realizada-queue", e => 
+            {
+                e.ConfigureConsumer<TransferenciaRealizadaConsumer>(context);
             });
         });
     });

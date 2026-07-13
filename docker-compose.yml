@@ -7,7 +7,7 @@ services:
     container_name: plataforma-postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword # Ajuste para a senha que você usa no appsettings.json
+      POSTGRES_PASSWORD: postgrespassword
       POSTGRES_DB: PlataformaBancariaDb
     ports:
       - "5433:5432"
@@ -21,7 +21,7 @@ services:
     image: mongo:latest
     container_name: plataforma-mongodb
     ports:
-      - "27018:27017" # Mapeando a porta externa 27018 que você usou no Worker
+      - "27018:27017"
     networks:
       - bancaria-network
     volumes:
@@ -29,16 +29,21 @@ services:
 
   # 3. Message Broker (RabbitMQ)
   rabbitmq:
-    image: rabbitmq:3-management-alpine # A tag "-management" é exigência do desafio
+    image: rabbitmq:3-management-alpine
     container_name: plataforma-rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "5673:5672"   # Porta de comunicação (que você usou no Program.cs)
-      - "15672:15672" # Porta do painel visual no navegador
+      - "5673:5672"
+      - "15672:15672"
     networks:
       - bancaria-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # 4. API (ASP.NET Core)
   api:
@@ -49,7 +54,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      - "5117:8080" # Ajuste a porta se necessário
+      - "5117:8080"
     depends_on:
       - postgres
       - mongodb
@@ -64,8 +69,10 @@ services:
       dockerfile: PlataformaBancaria.Worker/Dockerfile
     container_name: plataforma-worker
     depends_on:
-      - mongodb
-      - rabbitmq
+      mongodb:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
     networks:
       - bancaria-network
 

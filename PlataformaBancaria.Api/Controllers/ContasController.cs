@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PlataformaBancaria.Application.Commands.Contas;
 using PlataformaBancaria.Application.Commands.Operacoes;
 using PlataformaBancaria.Application.Queries;
+using PlataformaBancaria.Application.Queries.Contas;
 
 namespace PlataformaBancaria.Api.Controllers
 {
@@ -20,8 +21,6 @@ namespace PlataformaBancaria.Api.Controllers
         /// <summary>
         /// Abre uma nova Conta a partir do CNPJ, agência e documento informados.
         /// </summary>
-        /// <response code="201">Conta criada com sucesso.</response>
-        /// <response code="400">Dados inválidos ou CNPJ já cadastrado.</response>
         [HttpPost("/api/v1/accounts")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -32,22 +31,92 @@ namespace PlataformaBancaria.Api.Controllers
                 var contaId = await _mediator.Send(command);
                 return Created($"/api/v1/accounts/{contaId}", new { id = contaId });
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException ex) { return BadRequest(new { erro = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { erro = ex.Message }); }
+        }
+
+        /// <summary>
+        /// Obtém os dados de uma conta específica pelo ID.
+        /// </summary>
+        [HttpGet("/api/v1/accounts/{id:guid}")]
+        [ProducesResponseType(typeof(ContaResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ObterPorId([FromRoute] Guid id)
+        {
+            var query = new ObterContaPorIdQuery(id);
+            var conta = await _mediator.Send(query);
+            
+            if (conta == null) return NotFound(new { erro = "Conta não encontrada." });
+            return Ok(conta);
+        }
+
+        /// <summary>
+        /// Obtém os dados de uma conta específica pelo CNPJ.
+        /// </summary>
+        [HttpGet("/api/v1/accounts/cnpj/{cnpj}")]
+        [ProducesResponseType(typeof(ContaResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ObterPorCnpj([FromRoute] string cnpj)
+        {
+            var query = new ObterContaPorCnpjQuery(cnpj);
+            var conta = await _mediator.Send(query);
+
+            if (conta == null) return NotFound(new { erro = "Conta não encontrada." });
+            return Ok(conta);
+        }
+
+        /// <summary>
+        /// Consulta o saldo atual da conta no banco de leitura (MongoDB).
+        /// </summary>
+        [HttpGet("/api/v1/accounts/{id}/balance")]
+        [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ObterSaldo([FromRoute] Guid id)
+        {
+            var query = new ObterSaldoQuery(id);
+            var saldo = await _mediator.Send(query);
+            return Ok(new { saldo = saldo });
+        }
+
+        /// <summary>
+        /// Altera o status de uma conta existente.
+        /// </summary>
+        [HttpPatch("/api/v1/accounts/{id:guid}/status")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> AlterarStatus([FromRoute] Guid id, [FromBody] AlterarStatusRequest request)
+        {
+            var command = new AlterarStatusContaCommand(id, request.Status);
+            var sucesso = await _mediator.Send(command);
+
+            if (!sucesso) return NotFound(new { erro = "Conta não encontrada para alteração de status." });
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Encerra uma conta (soft delete), desde que o saldo seja zero.
+        /// </summary>
+        [HttpDelete("/api/v1/accounts/{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> EncerrarConta([FromRoute] Guid id)
+        {
+            var command = new EncerrarContaCommand(id);
+            var resultado = await _mediator.Send(command);
+
+            return resultado switch
             {
-                return BadRequest(new { erro = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { erro = ex.Message });
-            }
+                "NaoEncontrada" => NotFound(new { erro = "Conta não encontrada." }),
+                "SaldoPositivo" => BadRequest(new { erro = "Não é possível encerrar uma conta com saldo superior a zero." }),
+                "Sucesso" => NoContent(),
+                _ => BadRequest()
+            };
         }
 
         /// <summary>
         /// Realiza um depósito na conta informada pela rota.
         /// </summary>
-        /// <response code="200">Depósito realizado com sucesso.</response>
-        /// <response code="400">Valor inválido ou conta inoperante.</response>
-        /// <response code="404">Conta não encontrada.</response>
         [HttpPost("/api/v1/accounts/{id}/deposit")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -59,26 +128,14 @@ namespace PlataformaBancaria.Api.Controllers
                 await _mediator.Send(command with { ContaId = id });
                 return Ok(new { mensagem = "Depósito realizado com sucesso." });
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { erro = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { erro = ex.Message });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { erro = ex.Message });
-            }
+            catch (ArgumentException ex) { return BadRequest(new { erro = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { erro = ex.Message }); }
+            catch (KeyNotFoundException ex) { return NotFound(new { erro = ex.Message }); }
         }
 
         /// <summary>
         /// Realiza um saque na conta informada pela rota.
         /// </summary>
-        /// <response code="200">Saque realizado com sucesso.</response>
-        /// <response code="400">Valor inválido ou saldo insuficiente.</response>
-        /// <response code="404">Conta não encontrada.</response>
         [HttpPost("/api/v1/accounts/{id}/withdraw")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -90,24 +147,34 @@ namespace PlataformaBancaria.Api.Controllers
                 await _mediator.Send(command with { ContaId = id });
                 return Ok(new { mensagem = "Saque realizado com sucesso." });
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException ex) { return BadRequest(new { erro = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { erro = ex.Message }); }
+            catch (KeyNotFoundException ex) { return NotFound(new { erro = ex.Message }); }
+        }
+
+        /// <summary>
+        /// Realiza uma transferência entre contas.
+        /// </summary>
+        [HttpPost("/api/v1/accounts/{id}/transfer")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> RealizarTransferencia([FromRoute] Guid id, [FromBody] RealizarTransferenciaCommand command)
+        {
+            try
             {
-                return BadRequest(new { erro = ex.Message });
+                command.ContaOrigemId = id; 
+                await _mediator.Send(command);
+                return Ok(new { mensagem = "Transferência realizada com sucesso." });
             }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { erro = ex.Message });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { erro = ex.Message });
-            }
+            catch (ArgumentException ex) { return BadRequest(new { erro = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { erro = ex.Message }); }
+            catch (KeyNotFoundException ex) { return NotFound(new { erro = ex.Message }); }
         }
 
         /// <summary>
         /// Obtém o extrato da conta informada pela rota diretamente do banco de leitura.
         /// </summary>
-        /// <response code="200">Extrato retornado com sucesso.</response>
         [HttpGet("/api/v1/accounts/{id}/statement")]
         [ProducesResponseType(typeof(IEnumerable<TransacaoDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ObterExtrato(
@@ -129,8 +196,9 @@ namespace PlataformaBancaria.Api.Controllers
             };
 
             var extrato = await _mediator.Send(query);
-
             return Ok(extrato);
         }
     }
+
+    public record AlterarStatusRequest(string Status);
 }

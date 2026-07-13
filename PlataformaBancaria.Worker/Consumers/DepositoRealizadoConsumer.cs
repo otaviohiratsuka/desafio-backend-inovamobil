@@ -13,8 +13,8 @@ namespace PlataformaBancaria.Worker.Consumers
 
         public DepositoRealizadoConsumer(IMongoClient mongoClient)
         {
-            // O Mongo cria o banco e a tabela automaticamente na primeira vez que usamos
-            var database = mongoClient.GetDatabase("PlataformaBancariaReadDb");
+            // O nome do banco corrigido para alinhar com o Saldo e Extrato
+            var database = mongoClient.GetDatabase("PlataformaBancariaDb");
             _collection = database.GetCollection<TransacaoDocument>("Transacoes");
         }
 
@@ -24,8 +24,9 @@ namespace PlataformaBancaria.Worker.Consumers
             {
                 ContaId = context.Message.ContaId,
                 Tipo = "Deposito",
-                Valor = context.Message.Valor,
-                DataOcorrencia = context.Message.DataOcorrencia
+                Valor = context.Message.Valor, // Depósito entra positivo
+                DataOcorrencia = context.Message.DataOcorrencia,
+                Descricao = "Depósito recebido" // Adicionada a descrição para o extrato
             };
 
             // Salva fisicamente no MongoDB
