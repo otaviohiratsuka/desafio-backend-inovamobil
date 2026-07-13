@@ -2,10 +2,10 @@
 
 Este repositório contém a solução para o desafio de Desenvolvedor Backend .NET, focado na construção de uma Plataforma de Contas Bancárias. O sistema foi desenhado para ser altamente escalável, utilizando separação de responsabilidades para escrita e leitura de dados, além de comunicação assíncrona.
 
-## Sobre
+## 🎯 Sobre
 Este projeto consiste no desenvolvimento de uma Plataforma Bancária, permitindo a abertura de contas exclusivamente via CNPJ e o processamento de transações financeiras como depósitos, saques e transferências. Mais do que um fluxo financeiro tradicional, o objetivo central foi construir um motor bancário robusto e distribuído. A arquitetura foi desenhada para impedir duplicidade de transações através de idempotência e garantir consultas dos clientes, orquestrando múltiplos bancos de dados e mensageria assíncrona.
 
-### Ferramentas e Tecnologias
+### 🛠️ Ferramentas e Tecnologias
 
 1. **Padrões Arquiteturais**
      - **Domain-Driven Design (DDD):** O sistema foi modelado focando no núcleo do negócio, separando as responsabilidades em camadas claras e utilizando conceitos estruturais como Aggregates, Value Objects e Domain Events.
@@ -25,7 +25,7 @@ Este projeto consiste no desenvolvimento de uma Plataforma Bancária, permitindo
 4. **Integrações Externas**
    - **ReceitaWS:** O sistema se comunica com a API da Receita Federal (ReceitaWS) para validar e capturar ativamente os dados da empresa (RazaoSocial) através do CNPJ no momento da abertura da conta.
 
-### Desenvolvimento do Projeto:
+### ⚙️ Desenvolvimento do Projeto:
 
 1. **API e o Padrão CQRS**
    - A API foi construída utilizando **ASP.NET Core no .NET 8**. O núcleo da API é a implementação rigorosa do padrão **CQRS** através da biblioteca **MediatR**.
@@ -50,7 +50,7 @@ Este projeto consiste no desenvolvimento de uma Plataforma Bancária, permitindo
    - **Swagger:** Uma ferramenta padrão do mercado para gerar uma interface gráfica e interativa, permitindo que qualquer desenvolvedor que pegue o seu projeto entenda os contratos (`/accounts`, `/deposit`, `/transfer`) e teste a API diretamente pelo navegador
    - **Docker Compose:** O projeto inteiro foi conteinerizado. Com um único comando (docker compose up), o Docker sobe a API, o Worker, o RabbitMQ, o PostgreSQL e o MongoDB, amarrando todas as redes e variáveis de ambiente automaticamente.
 
-## Estrutura do Projeto
+## 📂 Estrutura do Projeto
 
 ```text
 📦 DESAFIO-BACKEND-INOVAMO
@@ -161,7 +161,7 @@ Este projeto consiste no desenvolvimento de uma Plataforma Bancária, permitindo
 ```
 
 
-## Como Executar o Projeto
+## 🚀 Como Executar o Projeto
 
 O projeto foi totalmente conteinerizado utilizando **Docker** para garantir que a aplicação, os bancos de dados e o sistema de mensageria rodem em qualquer ambiente de forma isolada, padronizada e sem a necessidade de instalações locais complexas.
 
@@ -173,6 +173,7 @@ Antes de começar, certifique-se de ter as seguintes ferramentas instaladas na s
 ### Passo a Passo
 
 1. **Clone o repositório**
+
 Abra o seu terminal e execute o comando abaixo para baixar o código-fonte:
 
 SSH
@@ -185,33 +186,44 @@ HTTPS
 git clone https://github.com/otaviohiratsuka/desafio-backend-inovamobil.git
 ```
 
-2. Acesse a pasta do projeto
+
+2. **Acesse a pasta do projeto**
+
 Navegue até o diretório raiz do repositório clonado:
 
 ```bash
 cd <desafio-backend-inovamobil>
 ```
 
-3. Suba a infraestrutura
+
+3. **Suba a infraestrutura**
+
 Na raiz do projeto (onde está localizado o arquivo `docker-compose.yml`), execute o comando abaixo para construir as imagens e levantar todos os microsserviços (API, Worker, PostgreSQL, MongoDB e RabbitMQ):
 ```bash
 docker compose up --build
 ```
 
-3. Aguarde a inicialização
+
+4. **Aguarde a inicialização**
+   
 O sistema estará pronto para uso quando os logs do terminal indicarem que o ``plataforma-api`` está escutando as requisições e o ``plataforma-worker`` declarou que se conectou com sucesso ao RabbitMQ.
 
-5. Acessos Úteis
+5. **Acessos Úteis**
+
 Com a infraestrutura rodando, você pode interagir com o sistema e monitorar os bastidores através dos seguintes links no seu navegador:
 
 Interface interativa para testar os Commands (abrir conta, depósito, saque, transferência) e Queries (saldo, extrato).
+
 `http://localhost:5117/swagger/index.html` (Ajuste a porta caso tenha mapeado diferente)
 
 Interface visual para monitorar a saúde do Message Broker, visualizar a criação das filas (Ex: `transferencia-realizada-queue`) e o tráfego dos eventos de domínio.
+
 `http://localhost:15672`
+
 Usuário: `guest` | Senha: `guest`
 
-6. Parar a aplicação
+6. **Parar a aplicação**
+
 Para encerrar a execução de forma segura e desligar todos os contêineres, pressione `CTRL+C` no terminal onde os logs estão rodando.
 
 Como alternativa, você pode abrir uma nova aba do terminal na raiz do projeto e executar
@@ -219,9 +231,15 @@ Como alternativa, você pode abrir uma nova aba do terminal na raiz do projeto e
 docker compose down
 ```
 
-## Autor
+## 👤 Autor
 
-Otávio Hiratsuka Camilo
+Desenvolvido por Otávio Hiratsuka Camilo;
 
-https://github.com/otaviohiratsuka
+Aluno do curso de Engenharia da Computação no [CEFET-MG](https://www.cefetmg.br)
+
+[GitHub](https://github.com/otaviohiratsuka)
+<div> 
+  <a href = "mailto:otaviohiratsukac@gmail.com"><img src="https://img.shields.io/badge/-Gmail-%23333?style=for-the-badge&logo=gmail&logoColor=white" target="_blank"></a>
+  <a href="https://www.linkedin.com/in/otaviohiratsuka/" target="_blank"><img src="https://img.shields.io/badge/-LinkedIn-%230077B5?style=for-the-badge&logo=linkedin&logoColor=white" target="_blank"></a>  
+</div>
 
