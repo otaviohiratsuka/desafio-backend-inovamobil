@@ -78,7 +78,7 @@ Cria uma nova conta corporativa. Note que não enviamos a "Razão Social", pois 
 Faz o desligamento (Soft Delete) do cliente na plataforma. A conta não é apagada do banco, apenas muda seu status para "Encerrada".
 
 **O que recebe:** Apenas o `id` da conta
-**O que retorna:** `204 No Content`
+**O que retorna:** `200 OK`
 * **Cenários Testados:**
     *   Se tentar encerrar uma conta que ainda possui dinheiro (saldo > 0) -> A camada de *Domain* barra a operação e retorna `400 Bad Request` informando que o saldo precisa ser sacado primeiro.
 
