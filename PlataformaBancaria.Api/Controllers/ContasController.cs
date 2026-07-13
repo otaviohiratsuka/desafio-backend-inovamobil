@@ -18,9 +18,7 @@ namespace PlataformaBancaria.Api.Controllers
             _mediator = mediator;
         }
 
-        /// <summary>
-        /// Abre uma nova Conta a partir do CNPJ, agência e documento informados.
-        /// </summary>
+        // Abre uma nova Conta a partir do CNPJ, agência e documento informados.
         [HttpPost("/api/v1/accounts")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -35,9 +33,7 @@ namespace PlataformaBancaria.Api.Controllers
             catch (InvalidOperationException ex) { return BadRequest(new { erro = ex.Message }); }
         }
 
-        /// <summary>
-        /// Obtém os dados de uma conta específica pelo ID.
-        /// </summary>
+        // Obtém os dados de uma conta específica pelo ID.
         [HttpGet("/api/v1/accounts/{id:guid}")]
         [ProducesResponseType(typeof(ContaResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -50,9 +46,7 @@ namespace PlataformaBancaria.Api.Controllers
             return Ok(conta);
         }
 
-        /// <summary>
-        /// Obtém os dados de uma conta específica pelo CNPJ.
-        /// </summary>
+        // Obtém os dados de uma conta específica pelo CNPJ.
         [HttpGet("/api/v1/accounts/cnpj/{cnpj}")]
         [ProducesResponseType(typeof(ContaResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -65,9 +59,7 @@ namespace PlataformaBancaria.Api.Controllers
             return Ok(conta);
         }
 
-        /// <summary>
-        /// Consulta o saldo atual da conta no banco de leitura (MongoDB).
-        /// </summary>
+        // Consulta o saldo atual da conta
         [HttpGet("/api/v1/accounts/{id}/balance")]
         [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -78,9 +70,8 @@ namespace PlataformaBancaria.Api.Controllers
             return Ok(new { saldo = saldo });
         }
 
-        /// <summary>
-        /// Altera o status de uma conta existente.
-        /// </summary>
+        
+        // Altera o status de uma conta existente.
         [HttpPatch("/api/v1/accounts/{id:guid}/status")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -93,9 +84,7 @@ namespace PlataformaBancaria.Api.Controllers
             return NoContent();
         }
 
-        /// <summary>
-        /// Encerra uma conta (soft delete), desde que o saldo seja zero.
-        /// </summary>
+        // Encerra uma conta
         [HttpDelete("/api/v1/accounts/{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -114,9 +103,7 @@ namespace PlataformaBancaria.Api.Controllers
             };
         }
 
-        /// <summary>
-        /// Realiza um depósito na conta informada pela rota.
-        /// </summary>
+        // Realiza um depósito na conta informada pela rota.
         [HttpPost("/api/v1/accounts/{id}/deposit")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -133,9 +120,7 @@ namespace PlataformaBancaria.Api.Controllers
             catch (KeyNotFoundException ex) { return NotFound(new { erro = ex.Message }); }
         }
 
-        /// <summary>
-        /// Realiza um saque na conta informada pela rota.
-        /// </summary>
+        //saque
         [HttpPost("/api/v1/accounts/{id}/withdraw")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -152,9 +137,7 @@ namespace PlataformaBancaria.Api.Controllers
             catch (KeyNotFoundException ex) { return NotFound(new { erro = ex.Message }); }
         }
 
-        /// <summary>
-        /// Realiza uma transferência entre contas.
-        /// </summary>
+        //transferência entre contas.
         [HttpPost("/api/v1/accounts/{id}/transfer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -172,9 +155,7 @@ namespace PlataformaBancaria.Api.Controllers
             catch (KeyNotFoundException ex) { return NotFound(new { erro = ex.Message }); }
         }
 
-        /// <summary>
-        /// Obtém o extrato da conta informada pela rota diretamente do banco de leitura.
-        /// </summary>
+        // extrato da conta 
         [HttpGet("/api/v1/accounts/{id}/statement")]
         [ProducesResponseType(typeof(IEnumerable<TransacaoDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ObterExtrato(

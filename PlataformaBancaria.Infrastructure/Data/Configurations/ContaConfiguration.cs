@@ -5,9 +5,7 @@ using PlataformaBancaria.Domain.ValueObjects;
 
 namespace PlataformaBancaria.Infrastructure.Data.Configurations
 {
-    /// <summary>
-    /// Configuração de mapeamento da entidade Conta via Fluent API.
-    /// </summary>
+    // Configuração de mapeamento da entidade Conta via Fluent API.
     public class ContaConfiguration : IEntityTypeConfiguration<Conta>
     {
         public void Configure(EntityTypeBuilder<Conta> builder)

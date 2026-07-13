@@ -9,15 +9,11 @@ using System.Threading.Tasks;
 
 namespace PlataformaBancaria.Application.Commands.Operacoes
 {
-    /// <summary>
-    /// Handler responsável por processar o saque em uma conta.
-    /// </summary>
+    // Handler responsável por processar o saque em uma conta.
     public class RealizarSaqueCommandHandler : IRequestHandler<RealizarSaqueCommand>
     {
         private readonly IContaRepository _repository;
         private readonly IPublishEndpoint _publishEndpoint;
-
-        // 1. Injetamos o IPublishEndpoint do MassTransit no construtor
         public RealizarSaqueCommandHandler(IContaRepository repository, IPublishEndpoint publishEndpoint)
         {
             _repository = repository;
@@ -33,10 +29,9 @@ namespace PlataformaBancaria.Application.Commands.Operacoes
 
             conta.Sacar(request.Valor);
 
-            // Salva no banco de dados principal (PostgreSQL)
+            // Salva no banco de dados principal
             await _repository.AtualizarAsync(conta);
 
-            // 2. Cria o evento com os dados do saque
             var evento = new SaqueRealizadoEvent
             {
                 ContaId = request.ContaId,
@@ -44,7 +39,6 @@ namespace PlataformaBancaria.Application.Commands.Operacoes
                 DataOcorrencia = DateTime.UtcNow
             };
 
-            // 3. Publica a mensagem no RabbitMQ para o Worker ouvir
             await _publishEndpoint.Publish(evento, cancellationToken);
         }
     }

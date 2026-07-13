@@ -29,7 +29,7 @@ namespace PlataformaBancaria.Worker.Consumers
                 Descricao = "Depósito recebido" // Adicionada a descrição para o extrato
             };
 
-            // Salva fisicamente no MongoDB
+            // Salva no MongoDB
             await _collection.InsertOneAsync(transacao);
 
             Console.WriteLine($"[MongoDB] Sucesso! Depósito de R$ {transacao.Valor} salvo no extrato da conta {transacao.ContaId}");

@@ -17,7 +17,7 @@ public class EncerrarContaCommandHandler : IRequestHandler<EncerrarContaCommand,
         var conta = await _contaRepository.ObterPorIdAsync(request.Id);
         if (conta == null) return "NaoEncontrada";
 
-        // Critério Eliminatório / Regra de Negócio: Só encerra com saldo ZERO
+        // Só encerra com saldo ZERO
         if (conta.Saldo > 0) 
         {
             return "SaldoPositivo";

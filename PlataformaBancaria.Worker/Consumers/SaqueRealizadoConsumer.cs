@@ -13,7 +13,6 @@ namespace PlataformaBancaria.Worker.Consumers
 
         public SaqueRealizadoConsumer(IMongoClient mongoClient)
         {
-            // O nome do banco corrigido para alinhar com o Saldo e Extrato
             var database = mongoClient.GetDatabase("PlataformaBancariaDb");
             _collection = database.GetCollection<TransacaoDocument>("Transacoes");
         }
@@ -24,7 +23,7 @@ namespace PlataformaBancaria.Worker.Consumers
             {
                 ContaId = context.Message.ContaId,
                 Tipo = "Saque", 
-                Valor = -context.Message.Valor, // Saque deve ser negativo para a matemática do /balance funcionar!
+                Valor = -context.Message.Valor, // Saque deve ser negativo para o /balance funcionar
                 DataOcorrencia = context.Message.DataOcorrencia,
                 Descricao = "Saque efetuado" // Adicionada a descrição para o extrato
             };

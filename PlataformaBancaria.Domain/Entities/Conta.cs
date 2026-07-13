@@ -16,8 +16,6 @@ namespace PlataformaBancaria.Domain.Entities
 
         private readonly List<Transacao> _transacoes = new();
         
-        // Retornar a própria referência da lista funciona perfeitamente para IReadOnlyCollection
-        // e evita que o EF Core perca o rastreamento ao criar cópias (AsReadOnly).
         public IReadOnlyCollection<Transacao> Transacoes => _transacoes;
 
         protected Conta() 

@@ -4,9 +4,6 @@ using PlataformaBancaria.Domain.Entities;
 
 namespace PlataformaBancaria.Infrastructure.Data.Configurations
 {
-    /// <summary>
-    /// Configuração de mapeamento da entidade Transacao via Fluent API.
-    /// </summary>
     public class TransacaoConfiguration : IEntityTypeConfiguration<Transacao>
     {
         public void Configure(EntityTypeBuilder<Transacao> builder)

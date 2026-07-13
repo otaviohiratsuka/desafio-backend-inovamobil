@@ -41,8 +41,6 @@ namespace PlataformaBancaria.Infrastructure.Repositories
 
        public async Task AtualizarAsync(Conta conta)
         {
-            // Deixamos o "espião" do EF Core fazer o trabalho dele.
-            // Ele vai ver a nova transação na lista e fazer o INSERT no banco automaticamente.
             await _context.SaveChangesAsync();
         }
     }

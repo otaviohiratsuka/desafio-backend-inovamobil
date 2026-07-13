@@ -10,26 +10,22 @@ MongoDB.Bson.Serialization.BsonSerializer.RegisterSerializer(new MongoDB.Bson.Se
 
 builder.ConfigureServices((hostContext, services) =>
 {
-    // Conexão ajustada para o container MongoDB
     services.AddSingleton<IMongoClient>(new MongoClient("mongodb://mongodb:27017"));
 
     services.AddMassTransit(x =>
     {
-        // 1. Registrando todos os consumidores
         x.AddConsumer<DepositoRealizadoConsumer>();
         x.AddConsumer<SaqueRealizadoConsumer>();
         x.AddConsumer<TransferenciaRealizadaConsumer>(); // <-- Consumidor de Transferência adicionado
 
         x.UsingRabbitMq((context, cfg) =>
         {
-            // Conexão ajustada para o container RabbitMQ
             cfg.Host("rabbitmq", 5672, "/", h =>
             {
                 h.Username("guest");
                 h.Password("guest");
             });
 
-            // 2. Configurando as filas (Endpoints)
             cfg.ReceiveEndpoint("deposito-realizado-queue", e =>
             {
                 e.ConfigureConsumer<DepositoRealizadoConsumer>(context);
@@ -40,7 +36,6 @@ builder.ConfigureServices((hostContext, services) =>
                 e.ConfigureConsumer<SaqueRealizadoConsumer>(context);
             });
 
-            // <-- Fila de Transferência adicionada
             cfg.ReceiveEndpoint("transferencia-realizada-queue", e => 
             {
                 e.ConfigureConsumer<TransferenciaRealizadaConsumer>(context);

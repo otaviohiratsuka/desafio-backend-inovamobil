@@ -6,9 +6,9 @@ using PlataformaBancaria.Domain.Services;
 
 namespace PlataformaBancaria.Application.Commands.Contas
 {
-    /// <summary>
-    /// Handler responsável por processar a abertura de uma nova Conta.
-    /// </summary>
+
+    // Handler responsável por processar a abertura de uma nova Conta.
+
     public class AbrirContaCommandHandler : IRequestHandler<AbrirContaCommand, Guid>
     {
         private readonly IContaRepository _repository;

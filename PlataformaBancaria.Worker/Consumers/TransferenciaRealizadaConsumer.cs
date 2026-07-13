@@ -19,21 +19,17 @@ public class TransferenciaRealizadaConsumer : IConsumer<TransferenciaRealizadaEv
     {
         var mensagem = context.Message;
 
-        // 1. Lançamento para a Conta de Origem (Saiu o dinheiro)
         var transacaoOrigem = new TransacaoDocument
         {
-            // O 'Id' é omitido para que o MongoDB gere o ObjectId automaticamente
             ContaId = mensagem.ContaOrigemId, 
             Tipo = "Transferencia", 
-            Valor = -mensagem.Valor, // Valor negativo no extrato
+            Valor = -mensagem.Valor,
             DataOcorrencia = mensagem.DataOcorrencia,
             Descricao = "Transferência enviada"
         };
 
-        // 2. Lançamento para a Conta de Destino (Entrou o dinheiro)
         var transacaoDestino = new TransacaoDocument
         {
-            // O 'Id' é omitido para que o MongoDB gere o ObjectId automaticamente
             ContaId = mensagem.ContaDestinoId,
             Tipo = "Transferencia", 
             Valor = mensagem.Valor, // Valor positivo no extrato

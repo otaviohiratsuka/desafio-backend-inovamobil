@@ -14,7 +14,6 @@ public class ObterContaPorCnpjQueryHandler : IRequestHandler<ObterContaPorCnpjQu
 
     public async Task<ContaResponseDto?> Handle(ObterContaPorCnpjQuery request, CancellationToken cancellationToken)
     {
-        // Certifique-se de que o seu IContaRepository possui este método criado
         var conta = await _contaRepository.ObterPorCnpjAsync(request.Cnpj);
 
         if (conta == null) return null;

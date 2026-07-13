@@ -4,10 +4,10 @@ namespace PlataformaBancaria.Domain.Entities
 {
     public class ChaveIdempotencia
     {
-        public string Id { get; private set; } // A própria string da chave será o ID no banco
+        public string Id { get; private set; }
         public DateTime DataProcessamento { get; private set; }
 
-        protected ChaveIdempotencia() { } // Construtor vazio exigido pelo EF Core
+        protected ChaveIdempotencia() { }
 
         public ChaveIdempotencia(string id)
         {
